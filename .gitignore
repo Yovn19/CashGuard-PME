@@ -1,0 +1,6 @@
+# Ignorer les gros fichiers CSV
+data/*.csv
+
+# Ignorer les fichiers Python compilés
+__pycache__/
+*.pyc
