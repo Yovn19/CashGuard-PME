@@ -84,15 +84,14 @@ for date in dates:
 
         # Choisir le type de transaction
         type_tx = np.random.choice(types_transactions, p=[
-            0.55,   # 55% vente médicament
-            0.20,   # 20% vente parapharmacie
-            0.10,   # 10% paiement fournisseur
-            0.03,   # 3% loyer (1x/mois mais réparti)
-            0.03,   # 3% électricité
-            0.04,   # 4% salaires
-            0.05,   # 5% remboursement
-        ])
-
+    0.55,   # vente médicament
+    0.20,   # vente parapharmacie
+    0.10,   # paiement fournisseur
+    0.003,  # loyer ← était 0.03
+    0.003,  # électricité ← était 0.03
+    0.004,  # salaires ← était 0.04
+    0.14,   # remboursement ← complète à 1.0
+])
         # Calculer le montant selon le type
         if type_tx == "vente_medicament":
             montant = np.random.uniform(500, 85_000) * multiplicateur
@@ -107,7 +106,7 @@ for date in dates:
             moyen = np.random.choice(moyens_paiement, p=[0.35, 0.35, 0.2, 0.07, 0.03])
 
         elif type_tx == "paiement_fournisseur":
-            montant = np.random.uniform(150_000, 2_500_000)
+            montant = np.random.uniform(50_000, 300_000)
             sens = "sortie"
             fournisseur = np.random.choice(fournisseurs)
             moyen = np.random.choice(["virement", "cheque"], p=[0.7, 0.3])
