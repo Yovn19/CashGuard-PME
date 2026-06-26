@@ -1,7 +1,9 @@
 import pandas as pd
 from prophet import Prophet
 import matplotlib.pyplot as plt
-
+from sklearn.metrics import mean_absolute_error
+from sklearn.metrics import mean_squared_error
+import numpy as np
 # ── 1. Chargement ─────────────────────────────────────────
 df = pd.read_csv("../data/tresorerie_pharmacie_v2.csv")
 df['date'] = pd.to_datetime(df['date'])
@@ -12,6 +14,10 @@ sorties = df[df['sens'] == 'sortie'].groupby('date')['montant'].sum()
 flux_net = (entrees - sorties).fillna(0).reset_index()
 flux_net.columns = ['ds', 'y']
 
+# ── Séparation entraînement / test ───────────────────────
+train = flux_net.iloc[:-30]   # Toutes les données sauf les 30 derniers jours
+test = flux_net.iloc[-30:]    # Les 30 derniers jours serviront à l'évaluation
+
 # ── 3. Entraînement Prophet ───────────────────────────────
 model = Prophet(
     yearly_seasonality=True,
@@ -19,12 +25,24 @@ model = Prophet(
     daily_seasonality=False,
     changepoint_prior_scale=0.05
 )
-model.fit(flux_net)
+model.fit(train)
 
 # ── 4. Prévisions J+15 et J+30 ───────────────────────────
 future = model.make_future_dataframe(periods=30)
 forecast = model.predict(future)
+# ── Prédictions sur les données de test ──────────────────
+future_test = model.make_future_dataframe(periods=30)
+forecast_test = model.predict(future_test)
 
+prediction_test = forecast_test.tail(30)["yhat"].values
+# ── Évaluation du modèle ─────────────────────────────────
+mae = mean_absolute_error(test["y"], prediction_test)
+rmse = np.sqrt(mean_squared_error(test["y"], prediction_test))
+
+print("\n=== Évaluation du modèle ===")
+print(f"MAE  : {mae:,.2f} FCFA")
+print(f"RMSE : {rmse:,.2f} FCFA")
+print("Evaluation terminee avec succes.")
 j15 = forecast.iloc[-16]
 j30 = forecast.iloc[-1]
 
